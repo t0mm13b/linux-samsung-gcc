@@ -1,0 +1,33 @@
+The aim of this project is to build the Samsung Toolchain used in Samsungs Bada SDK unter Linux
+
+1. Prerequisites
+2. Installation
+3. Contact
+
+
+-------
+
+1. Prerequisites
+You will need the sources for the toolchain. Samsung offers them on their opensource page. Check:
+
+http://opensource.samsung.com/reception/reception_main.do?method=reception_search&searchValue=bada
+
+and download the latest version to some folder. After download is complete, you will need to extract the contents.
+
+Within the contents should be a folder named "". It contains more zipped archives. Unzip all of them and copy the build_toolchain.sh script to this folder, since it will need the unpacked source directories for building.
+
+Also, the script might need root, so its advised to add the user to the sudoers file.
+
+2. Installation
+Installation will be mostly automated by the build_toolchain.sh script. See the comments at the beginning for usage and configuration.
+
+If you want to watch the process as well as log the outputs to a file, you could do:
+
+./build_toolchain.sh 2>&1 | tee build_log.txt
+
+or simply multitail on the logfile while its beeing generated.
+
+3. Contact
+Feel free to contribute! Help is always appreciated!
+
+Join #bada on irc.freenode.net and chat with us, pm us on github or leave a message on one of the bada dev forums we participate in =)
