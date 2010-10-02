@@ -270,7 +270,6 @@ build_binutils(){
 				'--with-pkgversion=$PKGCONF' \
 				--with-bugurl=$BTURL \
 				--disable-nls \
-				--with-sysroot=$SYSROOT \
 				--disable-poison-system-directories
 	if [ $? -eq 0 ]; then
 		echo ">> $BINUTILS_DIR configure successful <<"
@@ -281,15 +280,17 @@ build_binutils(){
 			sudo make install
 			if [ $? -eq 0 ]; then
 				echo ">> $BINUTILS_DIR make install successful <<"
-				sudo cp libiberty/libiberty.a $HOSTPREFIX/lib
+				sudo mkdir -p $HOSTPREFIX/usr/lib && sudo mkdir -p $HOSTPREFIX/usr/include
+				[ $? -eq 0 ] && echo ">> $HOSTPREFIX/usr/lib + $HOSTPREFIX/usr/include successful <<" || echo ">> $HOSTPREFIX/usr/lib + $HOSTPREFIX/usr/include Failed <<"
+				sudo cp libiberty/libiberty.a $HOSTPREFIX/usr/lib
 				[ $? -eq 0 ] && echo ">> $HOSTPREFIX/lib/libiberty.a copied successful <<" || echo ">> $HOSTPREFIX/lib/libiberty.a copy Failed <<"
-				sudo cp bfd/.libs/libbfd.a $HOSTPREFIX/lib
+				sudo cp bfd/.libs/libbfd.a $HOSTPREFIX/usr/lib
 				[ $? -eq 0 ] && echo ">> $HOSTPREFIX/lib/libbfd.a copied successful <<" || echo ">> $HOSTPREFIX/lib/libbfd.a copy Failed <<"
-				sudo cp bfd/bfd.h $HOSTPREFIX/include
+				sudo cp bfd/bfd.h $HOSTPREFIX/usr/include
 				[ $? -eq 0 ] && echo ">> $HOSTPREFIX/include/bfd.h copied successful <<" || echo ">> $HOSTPREFIX/include/bfd.h copy Failed <<"
-				sudo cp ../$BINUTILS_DIR/bfd/elf-bfd.h $HOSTPREFIX/include
+				sudo cp ../$BINUTILS_DIR/bfd/elf-bfd.h $HOSTPREFIX/usr/include
 				[ $? -eq 0 ] && echo ">> $HOSTPREFIX/include/elf-bfd.h copied successful <<" || echo ">> $HOSTPREFIX/include/elf-bfd.h copy Failed <<"
-				sudo cp opcodes/.libs/libopcodes.a $HOSTPREFIX/lib
+				sudo cp opcodes/.libs/libopcodes.a $HOSTPREFIX/usr/lib
 				[ $? -eq 0 ] && echo ">> $HOST/lib/libopcodes.a copied successful <<" || echo ">> $HOST/lib/libopcodes.a copy Failed <<"
 				return 0
 			else
@@ -306,14 +307,13 @@ build_binutils(){
 
 
 build_gcc_pre(){
-	cd $GCC_DIR
 	mkdir $TEMP_GCC_DIR_PRE
 	cd $TEMP_GCC_DIR_PRE
 	export AR_FOR_TARGET=$TARGET-ar
 	export NM_FOR_TARGET=$TARGET-nm
 	export OBJDUMP_FOR_TARGET=$TARGET-objdump
 	export STRIP_FOR_TARGET=$TARGET-strip
-	sh ../configure --build=$HOST \
+	sh ../$GCC_DIR/configure --build=$HOST \
 			--host=$HOST \
 			--target=$TARGET \
 			--enable-threads \
@@ -344,19 +344,18 @@ build_gcc_pre(){
 			--disable-decimal-float \
 			--disable-libffi \
 			--enable-languages=c \
-			--with-sysroot=$SYSROOT \
-			--with-build-sysroot=$BUILDSYSROOT \
 			--with-gmp=$HOSTPREFIX \
 			--with-mpfr=$HOSTPREFIX \
 			--with-ppl=$HOSTPREFIX \
 			'--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm' \
 			--with-cloog=$HOSTPREFIX \
 			--disable-libgomp \
-			--disable-poison-system-directories 
+			--disable-poison-system-directories \
+			--with-build-time-tools=$PREFIX/$TARGET/bin
 	if [ $? -eq 0 ]; then
 		echo ">> $GCC_DIR (PRE) configure successful <<"
 		echo ">> Doing make on $GCC_DIR <<"
-		make $MAKE_PARAMS "LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT"
+		make $MAKE_PARAMS #LDFLAGS_FOR_TARGET=--sysroot=$PREFIX CPPFLAGS_FOR_TARGET=--sysroot=$PREFIX build_tooldir=$PREFIX
 		if [ $? -eq 0 ]; then
 			echo ">> $GCC_DIR (PRE) make successful <<"
 			sudo make install
@@ -392,7 +391,7 @@ build_newlib(){
 		make $MAKE_PARAMS 
 		if [ $? -eq 0 ]; then
 			echo ">> $NEWLIB_DIR make successful <<"
-			sudo make install install_sysroot=$SYSROOT
+			sudo make install
 			if [ $? -eq 0 ]; then
 				echo ">> $NEWLIB_DIR make install successful <<"
 				return 0
@@ -407,14 +406,13 @@ build_newlib(){
 }
 
 build_gcc_post(){
-	cd $GCC_DIR
 	mkdir $TEMP_GCC_DIR_POST
 	cd $TEMP_GCC_DIR_POST
 	export AR_FOR_TARGET=$TARGET-ar
 	export NM_FOR_TARGET=$TARGET-nm
 	export OBJDUMP_FOR_TARGET=$TARGET-objdump
 	export STRIP_FOR_TARGET=$TARGET-strip
-	sh ../configure --build=$HOST \
+	sh ../$GCC_DIR/configure --build=$HOST \
 			--host=$HOST \
 			--target=$TARGET \
 			--enable-threads \
@@ -438,19 +436,18 @@ build_gcc_post(){
 			--disable-nls \
 			--prefix=$PREFIX \
 			--with-headers=yes \
-			--with-sysroot=$SYSROOT \
-			--with-build-sysroot=$BUILDSYSROOT \
 			--with-gmp=$HOSTPREFIX \
 			--with-mpfr=$HOSTPREFIX \
 			--with-ppl=$HOSTPREFIX \
 			'--with-host-libstdcxx=-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm' \
 			--with-cloog=$HOSTPREFIX \
 			--disable-libgomp \
-			--disable-poison-system-directories 
+			--disable-poison-system-directories \
+			--with-build-time-tools=$PREFIX/$TARGET/bin
 	if [ $? -eq 0 ]; then
 		echo ">> $GCC_DIR (POST) configure successful <<"
 		echo ">> Doing make on $GCC_DIR <<"
-		make $MAKE_PARAMS "LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT"
+		make $MAKE_PARAMS #LDFLAGS_FOR_TARGET=--sysroot=$PREFIX CPPFLAGS_FOR_TARGET=--sysroot=$PREFIX build_tooldir=$PREFIX
 		if [ $? -eq 0 ]; then
 			echo ">> $GCC_DIR (POST) make successful <<"
 			sudo make install
@@ -483,7 +480,7 @@ build_all(){
 	pushd $PWDDIR
 	build_gcc_pre
 	check_error $? ">> GCC BootStrap Build failed <<"
-	sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE
+	sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_PRE
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_PRE (PRE) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_PRE (PRE) <<"
 	popd $PWDDIR
 #
@@ -503,7 +500,7 @@ build_all(){
 	build_gcc_post
 	check_error $? ">> GCC Final Build failed <<"
 	popd $PWDDIR
-	sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST
+	sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_POST
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
 	return 0
 }
@@ -557,7 +554,7 @@ while getopts "hcapbfnl" opt; do
 			build_gcc_pre
 			check_error $? ">> GCC BootStrap Build failed <<"
 			popd $PWDDIR
-			sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE
+			sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_PRE
 			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_PRE (PRE) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_PRE (PRE) <<"
 			;;
 		n)
@@ -578,7 +575,7 @@ while getopts "hcapbfnl" opt; do
 			build_gcc_post
 			check_error $? ">> GCC Final Build failed <<"
 			popd $PWDDIR
-			sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST
+			sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_POST
 			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
 			;;
 		\?)

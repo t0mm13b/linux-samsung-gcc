@@ -1,4 +1,4 @@
-The aim of this project is to build the Samsung Toolchain used in Samsungs Bada SDK unter Linux
+The aim of this project is to build the Samsung Toolchain used in Samsung's Bada SDK under Linux
 
 /!\ WARNING /!\
 This is not an official Samsung project, we cannot guarantee any functionality, whatever you try is at your own risk.
@@ -24,7 +24,7 @@ http://opensource.samsung.com/reception/reception_main.do?method=reception_searc
 
 and download the latest version to some folder. After download is complete, you will need to extract the contents.
 
-Within the contents should be a folder named "". It contains more zipped archives. Unzip all of them and copy the build_toolchain.sh script to this folder, since it will need the unpacked source directories for building.
+Within the contents should be a folder named "samsung-sourceryg++-4.4-157-arm-samsung-nucleuseabi". It contains more zipped archives. Unzip all of them and copy the build_toolchain.sh script to this folder, since it will need the unpacked source directories for building.
 
 Also, the script might need root, so its advised to add the user to the sudoers file.
 
