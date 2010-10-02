@@ -528,7 +528,7 @@ if [ $# -eq 0 ]; then
 fi
 #
 OPTIND=1
-while getopts "hcapfl" opt; do
+while getopts "hcapbfnl" opt; do
 	case "$opt" in
 		h)
 			usage
