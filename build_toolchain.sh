@@ -17,10 +17,10 @@
 #     Make it more cleaner
 #
 # How to run it:
-#     chmod u+x CodeSourcery.sh
-#     ./CodeSourcery.sh > CodeSourcery_Log.log 2>&1
+#     chmod u+x build_toolchain.sh
+#     ./build_toolchain.sh > build_toolchain.log 2>&1
 # Verify:
-#     grep ^\>\> CodeSourcery_Log.log
+#     grep ^\>\> build_toolchain.log
 #     All completion messages indicating success failure will be shown...
 #
 export BTURL='https://support.codesourcery.com/GNUToolchain/'
@@ -36,7 +36,7 @@ export HOSTPREFIX=$PREFIX/host
 #
 MAKE_PARAMS=-j4
 PWDDIR=$PWD
-CODESOURCERY_BUILD=CodeSourcery.log
+CODESOURCERY_BUILD=build_toolchain.log
 #
 TEMP_BINUTILS_DIR=temp-binutils-build
 TEMP_NEWLIB_DIR=temp-newlib-build
@@ -354,8 +354,7 @@ build_gcc_pre(){
 	if [ $? -eq 0 ]; then
 		echo ">> $GCC_DIR (PRE) configure successful <<"
 		echo ">> Doing make on $GCC_DIR <<"
-		echo ">> TEMP DIR: `pwd`"
-		make $MAKE_PARAMS LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT
+		make $MAKE_PARAMS "LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT"
 		if [ $? -eq 0 ]; then
 			echo ">> $GCC_DIR (PRE) make successful <<"
 			sudo make install
@@ -391,7 +390,7 @@ build_newlib(){
 		make $MAKE_PARAMS 
 		if [ $? -eq 0 ]; then
 			echo ">> $NEWLIB_DIR make successful <<"
-			sudo make install
+			sudo make install install_sysroot=$SYSROOT
 			if [ $? -eq 0 ]; then
 				echo ">> $NEWLIB_DIR make install successful <<"
 				return 0
@@ -449,7 +448,7 @@ build_gcc_post(){
 	if [ $? -eq 0 ]; then
 		echo ">> $GCC_DIR (POST) configure successful <<"
 		echo ">> Doing make on $GCC_DIR <<"
-		make $MAKE_PARAMS LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT
+		make $MAKE_PARAMS "LDFLAGS_FOR_TARGET=--sysroot=$SYSROOT CPPFLAGS_FOR_TARGET=--sysroot=$SYSROOT build_tooldir=$BUILDSYSROOT"
 		if [ $? -eq 0 ]; then
 			echo ">> $GCC_DIR (POST) make successful <<"
 			sudo make install
@@ -475,14 +474,14 @@ build_all(){
 	pushd $PWDDIR
 	build_binutils
 	check_error $? ">> Binutils Build failed <<"
-	su "sh -c rm -rf $PWDDIR/$TEMP_BINUTILS_DIR"
+	sudo rm -rf $PWDDIR/$TEMP_BINUTILS_DIR
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_BINUTILS_DIR successful <<" || echo ">> Failed to remove $TEMP_BINUTILS_DIR <<"
 	popd $PWDDIR
 #
 	pushd $PWDDIR
 	build_gcc_pre
 	check_error $? ">> GCC BootStrap Build failed <<"
-	su "sh -c rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE"
+	sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_PRE (PRE) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_PRE (PRE) <<"
 	popd $PWDDIR
 #
@@ -493,16 +492,16 @@ build_all(){
 	build_newlib
 	check_error $? ">> NewLib build failed <<"
 	popd $PWDDIR
-	su "sh -c rm -rf $PWDDIR/$TEMP_NEWLIB_DIR"
+	sudo rm -rf $PWDDIR/$TEMP_NEWLIB_DIR
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_NEWLIB_DIR successful <<" || echo ">> Failed to remove $TEMP_NEWLIB_DIR <<"
 #
 	pushd $PWDDIR
 	OLDPATH=$PATH
-	export PATH=$PREFIX/bin:$PREFIX:$SYSROOT:$OLDPATH
+	export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
 	build_gcc_post
 	check_error $? ">> GCC Final Build failed <<"
 	popd $PWDDIR
-	su "sh -c rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST"
+	sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
 	return 0
 }
@@ -547,17 +546,17 @@ while getopts "hcapfl" opt; do
 			pushd $PWDDIR
 			build_binutils
 			check_error $? ">> Binutils Build failed <<"
-			su "sh -c rm -rf $PWDDIR/$TEMP_BINUTILS_DIR"
-			[ $? -eq 0 ] && echo ">> Removed $TEMP_BINUTILS_DIR successful <<" || echo ">> Failed to remove $TEMP_BINUTILS_DIR <<"
 			popd $PWDDIR
+			sudo rm -rf $PWDDIR/$TEMP_BINUTILS_DIR
+			[ $? -eq 0 ] && echo ">> Removed $TEMP_BINUTILS_DIR successful <<" || echo ">> Failed to remove $TEMP_BINUTILS_DIR <<"
 			;;
 		f)
 			pushd $PWDDIR
 			build_gcc_pre
 			check_error $? ">> GCC BootStrap Build failed <<"
-			su "sh -c rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE"
-			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_PRE (PRE) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_PRE (PRE) <<"
 			popd $PWDDIR
+			sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_PRE
+			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_PRE (PRE) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_PRE (PRE) <<"
 			;;
 		n)
 			pushd $PWDDIR
@@ -567,17 +566,17 @@ while getopts "hcapfl" opt; do
 			build_newlib
 			check_error $? ">> NewLib build failed <<"
 			popd $PWDDIR
-			su "sh -c rm -rf $PWDDIR/$TEMP_NEWLIB_DIR"
+			sudo rm -rf $PWDDIR/$TEMP_NEWLIB_DIR
 			[ $? -eq 0 ] && echo ">> Removed $TEMP_NEWLIB_DIR successful <<" || echo ">> Failed to remove $TEMP_NEWLIB_DIR <<"
 			;;
 		l)
 			pushd $PWDDIR
 			OLDPATH=$PATH
-			export PATH=$PREFIX/bin:$PREFIX:$SYSROOT:$OLDPATH
+			export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
 			build_gcc_post
 			check_error $? ">> GCC Final Build failed <<"
 			popd $PWDDIR
-			su "sh -c rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST"
+			sudo rm -rf $PWDDIR/$GCC_DIR/$TEMP_GCC_DIR_POST
 			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
 			;;
 		\?)
