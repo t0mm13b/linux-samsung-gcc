@@ -17,8 +17,8 @@
 #     Make it more cleaner
 #
 # How to run it:
-#     chmod u+x CodeSourcery.sh
-#     ./CodeSourcery.sh > CodeSourcery_Log.log 2>&1
+#     chmod u+x build_toolchain.sh
+#     ./build_toolchain.sh > build_log.txt 2>&1
 # Verify:
 #     grep ^\>\> CodeSourcery_Log.log
 #     All completion messages indicating success failure will be shown...

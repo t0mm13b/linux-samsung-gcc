@@ -18,6 +18,8 @@ Within the contents should be a folder named "". It contains more zipped archive
 
 Also, the script might need root, so its advised to add the user to the sudoers file.
 
+In some cases, /bin/sh does not link to BASH but some other shell, please ensure that you are using BASH within this script
+
 2. Installation
 Installation will be mostly automated by the build_toolchain.sh script. See the comments at the beginning for usage and configuration.
 
