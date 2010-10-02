@@ -1,5 +1,14 @@
 The aim of this project is to build the Samsung Toolchain used in Samsungs Bada SDK unter Linux
 
+/!\ WARNING /!\
+This is not an official Samsung project, we cant garantuee any functionality, whatever you try is at your own risk.
+
+Especially, we are not responsible for any bricked devices, your wife leaving you because of endless nights of compilation or the end of world.
+
+This script is HEAVILY WIP (means: work in progress). So dont expect anything
+/!\ WARNING /!\
+
+
 1. Prerequisites
 2. Installation
 3. Contact
@@ -19,6 +28,10 @@ Within the contents should be a folder named "". It contains more zipped archive
 Also, the script might need root, so its advised to add the user to the sudoers file.
 
 In some cases, /bin/sh does not link to BASH but some other shell, please ensure that you are using BASH within this script
+
+Additional development tools needed:
+
+flex, bison, automake, autoconf, make, gnu toolchains, libtool, texinfo
 
 2. Installation
 Installation will be mostly automated by the build_toolchain.sh script. See the comments at the beginning for usage and configuration.
