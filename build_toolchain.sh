@@ -82,7 +82,9 @@ Note(s):
 	When -a is used, it builds preliminary, binutils, gcc (PRE), newlib and gcc (POST) in that order
 
 BUGS:
-Contact <tommie.brennan@gmail.com> for any issues.
+Contact:
+	rzr, x29a or t0mm13b via #bada @ irc.freenode.net or at
+	http://github.com/t0mm13b/linux-samsung-gcc and leave a message for the maintainers
 EOF
 }
 
