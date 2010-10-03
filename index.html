@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>t0mm13b/linux-samsung-gcc @ GitHub</title>
+	
+	<style type="text/css">
+		body {
+  		margin-top: 1.0em;
+  		background-color: #1e3292;
+		  font-family: "Helvetica,Arial,FreeSans";
+  		color: #ffffff;
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+		h1 { font-size: 3.8em; color: #e1cd6d; margin-bottom: 3px; }
+		h1 .small { font-size: 0.4em; }
+		h1 a { text-decoration: none }
+		h2 { font-size: 1.5em; color: #e1cd6d; }
+    h3 { text-align: center; color: #e1cd6d; }
+    a { color: #e1cd6d; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+		pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+	</style>
+	
+</head>
+
+<body>
+  <a href="http://github.com/t0mm13b/linux-samsung-gcc"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/t0mm13b/linux-samsung-gcc/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/t0mm13b/linux-samsung-gcc/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+
+    <h1><a href="http://github.com/t0mm13b/linux-samsung-gcc">linux-samsung-gcc</a>
+      <span class="small">by <a href="http://github.com/t0mm13b">t0mm13b</a></span></h1>
+
+    <div class="description">
+      Unofficial scripts to ease building SDK
+    </div>
+
+    <p>The aim of this project is to build the Samsung Toolchain used in Samsung's Bada SDK under Linux
+
+/!\ WARNING /!\
+This is not an official Samsung project, we cannot guarantee any functionality, whatever you try is at your own risk.
+
+Especially, we are not responsible for any bricked devices, your wife leaving you because of endless nights of compilation or the end of world.
+
+This script is HEAVILY WIP (means: work in progress). So do not expect anything short of a miracle!
+/!\ WARNING /!\
+</p><h2>Dependencies</h2>
+<p>You will need the sources for the toolchain. Samsung offers them on their opensource page. Check:
+
+http://opensource.samsung.com/reception/reception_main.do?method=reception_search&searchValue=bada
+
+and download the latest version to some folder. After download is complete, you will need to extract the contents.
+
+Within the contents should be a folder named "samsung-sourceryg++-4.4-157-arm-samsung-nucleuseabi". It contains more zipped archives. Unzip all of them and copy the build_toolchain.sh script to this folder, since it will need the unpacked source directories for building.
+
+Also, the script might need root, so its advised to add the user to the sudoers file.
+
+In some cases, /bin/sh does not link to BASH but some other shell, please ensure that you are using BASH within this script
+
+Additional development tools needed:
+
+flex, bison, automake, autoconf, make, gnu toolchains, libtool, texinfo
+</p>
+<h2>Install</h2>
+<p>Installation will be mostly automated by the build_toolchain.sh script. See the comments at the beginning for usage and configuration.
+
+If you want to watch the process as well as log the outputs to a file, you could do:
+
+./build_toolchain.sh 2>&1 | tee build_log.txt
+
+or simply multitail on the logfile while its beeing generated.
+</p>
+<h2>Authors</h2>
+<p>x29a (0.x29a.0@gmail.com)<br/>Tom Brennan (tommie.brennan@gmail.com)<br/><br/>      </p>
+<h2>Contact</h2>
+<p>Tom Brennan (tommie.brennan@gmail.com)<br/>      </p>
+
+
+    <h2>Download</h2>
+    <p>
+      You can download this project in either
+      <a href="http://github.com/t0mm13b/linux-samsung-gcc/zipball/master">zip</a> or
+      <a href="http://github.com/t0mm13b/linux-samsung-gcc/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/t0mm13b/linux-samsung-gcc</pre>
+    </p>
+
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/t0mm13b/linux-samsung-gcc">t0mm13b/linux-samsung-gcc</a>
+    </div>
+
+  </div>
+
+  
+</body>
+</html>
