@@ -1,0 +1,7 @@
+Miscellany links that are of interest:
+
+http://wiki.gnashdev.org/Building_for_Android - talks about the CodeSourcery info
+
+http://groups.google.com/group/android-ndk/browse_thread/thread/5804b3442bb394b1?pli=1 - mentions about enabling RTTI, exceptions as enhancements by way of patch
+
+http://cmpware.com/Docs/BuildingGcc.pdf - talks about building a cross compiler and the verification of the compiled executables
