@@ -9,11 +9,14 @@
 # This script runs inside that root directory where the source code/relevant dirs are located
 # minimal error checking so far
 #
-# Issue: Post compile of gcc fails...
+# Issue(s): 
+# 	1. Zlib is built again after post gcc build (why?)
+#	2. Expat is built for host - are they part of linkage purposes ???
+#	3. 
 #
 # To do:
 #     If one step fails then abort immediately instead of carrying on forward to the next step <- DONE!
-#     When post compile of gcc pass - continue building the other libs with the newly built gcc
+#     When post compile of gcc pass - continue building the other libs with the newly built gcc <- DONE!
 #     Make it more cleaner
 #
 # How to run it:
@@ -42,6 +45,7 @@ TEMP_BINUTILS_DIR=temp-binutils-build
 TEMP_NEWLIB_DIR=temp-newlib-build
 TEMP_GCC_DIR_PRE=temp-gcc-build-pre
 TEMP_GCC_DIR_POST=temp-gcc-build-post
+POST_GCC_OK=0
 #
 ZLIB_DIR=zlib-1.2.3
 GMP_DIR=gmp-stable
@@ -51,6 +55,8 @@ CLOOG_DIR=cloog-0.15
 BINUTILS_DIR=binutils-stable
 GCC_DIR=gcc-4.4
 NEWLIB_DIR=newlib-stable
+EXPAT_DIR=expat-mirror
+GDB_DIR=gdb-stable
 #
 # This was borrowed from http://stackoverflow.com/questions/1245295/building-arm-gnu-cross-compiler
 # Written by Martin Decky
@@ -77,9 +83,12 @@ OPTIONS:
 	-f	Build gcc (PRE) - bootstrap compiler
 	-n	Build newlib
 	-l	Build gcc (POST) - native compiler
+	-z	Build zlib (POST)
+	-x	Build expat (POST)
+	-d	Build gdb (POST)
 
 Note(s):
-	When -a is used, it builds preliminary, binutils, gcc (PRE), newlib and gcc (POST) in that order
+	When -a is used, it builds preliminary, binutils, gcc (PRE), newlib and gcc (POST), expat and gdb in that order
 
 BUGS:
 Contact:
@@ -502,9 +511,116 @@ build_all(){
 	popd $PWDDIR
 	sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_POST
 	[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
+#
+	pushd $PWDDIR
+	OLDPATH=$PATH
+	export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
+	build_post_expat
+	check_error $? ">> $EXPAT_DIR (POST) Build failed <<"
+	popd $PWDDIR
+#
+	pushd $PWDDIR
+	OLDPATH=$PATH
+	export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
+	build_post_gdb
+	check_error $? ">> $GDB_DIR Final Build failed <<"
+	popd $PWDDIR
+#
 	return 0
 }
 
+# Not sure if this is right as to why not build a native zlib????
+# As per steps 62/154, we built that right? 
+# Questionable ???
+build_post_zlib(){
+	cd $ZLIB_DIR
+	make distclean && make clean
+	sh configure --prefix=$PREFIX
+	if [ $? -eq 0 ]; then
+		echo ">> $ZLIB_DIR (POST) configure successful <<"
+		make $MAKE_PARAMS
+		if [ $? -eq 0 ]; then
+			echo ">> $ZLIB_DIR (POST) make successful <<"
+			sudo make install
+			if [ $? -eq 0 ]; then
+				echo ">> $ZLIB_DIR (POST) make install successful <<"
+				return 0
+			else
+				echo ">> $ZLIB_DIR (POST) make install Failed <<"
+			fi
+		else
+			echo ">> $ZLIB_DIR (POST) make failed <<"
+		fi
+	else
+		echo ">> $ZLIB_DIR (POST) configure failed <<"
+	fi
+	return -1
+}
+
+build_post_expat(){
+	cd $EXPAT_DIR
+	sh configure --build=$HOST \
+			--host=$HOST \
+			--target=$TARGET \
+			--prefix=$HOSTPREFIX \
+			--disable-shared \
+			--disable-nls
+	if [ $? -eq 0 ]; then
+		echo ">> $EXPAT_DIR (POST) configure successful <<"
+		make $MAKE_PARAMS
+		if [ $? -eq 0 ]; then
+			echo ">> $EXPAT_DIR (POST) make successful <<"
+			sudo make install
+			if [ $? -eq 0 ]; then
+				echo ">> $EXPAT_DIR (POST) make install successful <<"
+				return 0
+			else
+				echo ">> $EXPAT_DIR (POST) make install Failed <<"
+			fi
+		else
+			echo ">> $EXPAT_DIR (POST) make failed <<"
+		fi
+	else
+		echo ">> $EXPAT_DIR (POST) configure failed <<"
+	fi
+	return -1
+}
+
+build_post_gdb(){
+	cd $GDB_DIR
+	sh configure --build=$HOST \
+		--target=$TARGET \
+		--prefix=$HOSTPREFIX \
+		--host=$HOST \
+		--disable-sim \
+		'--with-pkgversion=$PKGCONF' \
+		--with-bugurl=$BTURL \
+		--disable-nls \
+		--with-libexpat-prefix=$HOSTPREFIX \
+		--with-separate-debug-dir=$PREFIX/$TARGET.debug \
+		--with-relocated-sources=$PREFIX/$TARGET \
+		--with-system-gdbinit=$PREFIX/$TARGET/lib/gdbinit \
+		'--with-gdb-datadir=$PREFIX/$TARGET/share/gdb'
+	if [ $? -eq 0 ]; then
+		echo ">> $GDB_DIR (POST) configure successful <<"
+		make $MAKE_PARAMS
+		if [ $? -eq 0 ]; then
+			echo ">> $GDB_DIR (POST) make successful <<"
+			sudo make install prefix=$PREFIX
+			if [ $? -eq 0 ]; then
+				echo ">> $GDB_DIR (POST) make install successful <<"
+				return 0
+			else
+				echo ">> $GDB_DIR (POST) make install Failed <<"
+			fi
+		else
+			echo ">> $GDB_DIR (POST) make failed <<"
+		fi
+	else
+		echo ">> $GDB_DIR (POST) configure failed <<"
+	fi
+	
+}
 cleanup(){
 	pushd $PWDDIR
 	for i in *; do 
@@ -525,7 +641,7 @@ if [ $# -eq 0 ]; then
 fi
 #
 OPTIND=1
-while getopts "hcapbfnl" opt; do
+while getopts "hcapbfnlxzd" opt; do
 	case "$opt" in
 		h)
 			usage
@@ -577,6 +693,33 @@ while getopts "hcapbfnl" opt; do
 			popd $PWDDIR
 			sudo rm -rf $PWDDIR/$TEMP_GCC_DIR_POST
 			[ $? -eq 0 ] && echo ">> Removed $TEMP_GCC_DIR_POST (POST) successful <<" || echo ">> Failed to remove $TEMP_GCC_DIR_POST (POST) <<"
+			;;
+		z) 
+			pushd $PWDDIR
+			OLDPATH=$PATH
+			export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
+			export CC=$PREFIX/bin/$TARGET-gcc
+			export CFLAGS=-fPIC
+			build_post_zlib
+			check_error $? ">> $ZLIB_DIR (POST) Build failed <<"
+			popd $PWDDIR
+			;;
+		x)
+			pushd $PWDDIR
+			OLDPATH=$PATH
+			unset CC
+			export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
+			build_post_expat
+			check_error $? ">> $EXPAT_DIR (POST) Build failed <<"
+			popd $PWDDIR
+			;;
+		d)
+			pushd $PWDDIR
+			OLDPATH=$PATH
+			export PATH=$PREFIX/bin:$PREFIX:$OLDPATH
+			build_post_gdb
+			check_error $? ">> $GDB_DIR Final Build failed <<"
+			popd $PWDDIR
 			;;
 		\?)
 			usage
